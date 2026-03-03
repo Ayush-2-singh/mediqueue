@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MediQueue — Dr. R.K. Dwivedi Clinic</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --g50:#f0fdf4;--g100:#dcfce7;--g200:#bbf7d0;--g400:#4ade80;
+  --g500:#22c55e;--g600:#16a34a;--g700:#15803d;--g800:#166534;
+  --s50:#f8fafc;--s100:#f1f5f9;--s200:#e2e8f0;--s300:#cbd5e1;--s400:#94a3b8;
+  --s500:#64748b;--s600:#475569;--s700:#334155;--s800:#1e293b;
+  --white:#fff;--red:#ef4444;--blue:#3b82f6;
+  --shadow:0 4px 16px rgba(0,0,0,.08);--shadow-sm:0 1px 3px rgba(0,0,0,.07);
+  --r:12px;--rl:18px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:var(--s50);color:var(--s800);min-height:100vh;font-size:14px}
+
+/* TOPBAR */
+.topbar{background:var(--white);border-bottom:1px solid var(--s200);height:64px;display:flex;align-items:center;padding:0 2rem;gap:1rem;position:sticky;top:0;z-index:200;box-shadow:var(--shadow-sm)}
+.brand{display:flex;align-items:center;gap:10px;flex:1}
+.brand-icon{width:36px;height:36px;background:linear-gradient(135deg,var(--g600),var(--g400));border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 2px 8px rgba(22,163,74,.3)}
+.brand-name{font-size:1.1rem;font-weight:800;color:var(--s800);letter-spacing:-.5px}
+.brand-name span{color:var(--g600)}
+.brand-sub{font-size:.7rem;color:var(--s400);font-weight:500}
+.nav-tabs{display:flex;background:var(--s100);border-radius:9px;padding:3px;gap:2px}
+.nav-tab{padding:.4rem 1.1rem;border-radius:7px;border:none;background:transparent;font-family:'Inter',sans-serif;font-size:.8rem;font-weight:600;color:var(--s500);cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:5px}
+.nav-tab.active{background:var(--white);color:var(--g700);box-shadow:var(--shadow-sm)}
+.db-chip{display:inline-flex;align-items:center;gap:5px;background:var(--g50);border:1px solid var(--g200);border-radius:20px;padding:.2rem .7rem;font-size:.7rem;font-weight:600;color:var(--g700);margin-left:auto}
+.db-dot{width:6px;height:6px;background:var(--g500);border-radius:50%;animation:blk 2s infinite}
+@keyframes blk{0%,100%{opacity:1}50%{opacity:.2}}
+
+/* PAGES */
+.page{display:none;animation:fadeUp .3s ease}.page.active{display:block}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+/* PAGE HEADER */
+.page-header{background:linear-gradient(135deg,var(--g700) 0%,var(--g500) 100%);padding:2.5rem 2rem 2rem;color:var(--white);position:relative;overflow:hidden}
+.page-header::before{content:'';position:absolute;top:-40px;right:-40px;width:220px;height:220px;border-radius:50%;background:rgba(255,255,255,.06)}
+.page-header h1{font-size:1.6rem;font-weight:800;letter-spacing:-.5px;position:relative;z-index:1}
+.page-header p{margin-top:.3rem;color:rgba(255,255,255,.75);font-size:.88rem;position:relative;z-index:1}
+
+/* CONTAINER */
+.container{max-width:960px;margin:0 auto;padding:2rem 1.5rem}
+
+/* CARDS */
+.card{background:var(--white);border-radius:var(--rl);box-shadow:var(--shadow);padding:1.8rem;margin-bottom:1.5rem;border:1px solid var(--s100)}
+.card-title{font-size:.95rem;font-weight:700;color:var(--s700);margin-bottom:1.3rem;display:flex;align-items:center;gap:.5rem}
+.card-title-icon{width:28px;height:28px;background:var(--g100);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px}
+
+/* STATUS BAR */
+.status-bar{background:var(--white);border:1px solid var(--s200);border-radius:var(--rl);padding:1.2rem 1.5rem;display:grid;grid-template-columns:1fr 1px 1fr;gap:1rem;margin-bottom:1.5rem;box-shadow:var(--shadow-sm)}
+.status-item{text-align:center}
+.status-divider{background:var(--s200)}
+.status-label{font-size:.7rem;font-weight:700;color:var(--s400);letter-spacing:.8px;text-transform:uppercase}
+.status-value{font-family:'IBM Plex Mono',monospace;font-size:2rem;font-weight:500;color:var(--g600);margin-top:.1rem;line-height:1}
+
+/* FORM */
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.form-group{margin-bottom:1rem}
+.form-label{display:block;font-size:.75rem;font-weight:600;color:var(--s600);margin-bottom:.4rem;text-transform:uppercase;letter-spacing:.5px}
+.form-input{width:100%;padding:.65rem 1rem;border:1.5px solid var(--s200);border-radius:var(--r);font-family:'Inter',sans-serif;font-size:.9rem;color:var(--s800);background:var(--white);transition:border-color .2s,box-shadow .2s}
+.form-input:focus{outline:none;border-color:var(--g400);box-shadow:0 0 0 3px rgba(74,222,128,.15)}
+.form-input::placeholder{color:var(--s300)}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:.4rem;padding:.65rem 1.4rem;border-radius:var(--r);border:none;font-family:'Inter',sans-serif;font-weight:600;font-size:.88rem;cursor:pointer;transition:all .2s}
+.btn-primary{background:linear-gradient(135deg,var(--g600),var(--g500));color:var(--white);box-shadow:0 2px 8px rgba(22,163,74,.25)}
+.btn-primary:hover{background:linear-gradient(135deg,var(--g700),var(--g600));transform:translateY(-1px)}
+.btn-secondary{background:var(--g50);color:var(--g700);border:1.5px solid var(--g200)}
+.btn-secondary:hover{background:var(--g100)}
+.btn-danger{background:#fee2e2;color:var(--red);border:1.5px solid #fecaca}
+.btn-danger:hover{background:#fecaca}
+.btn-amber{background:#fef3c7;color:#92400e;border:1.5px solid #fde68a}
+.btn-amber:hover{background:#fde68a}
+.btn-sm{padding:.35rem .9rem;font-size:.78rem}
+.btn-lg{padding:.8rem 2rem;font-size:.95rem}
+.btn-full{width:100%;justify-content:center}
+.btn:disabled{opacity:.5;cursor:not-allowed;transform:none!important}
+
+/* TOKEN CARD */
+.token-card{background:linear-gradient(145deg,var(--g700),var(--g500));border-radius:var(--rl);padding:2rem;color:var(--white);text-align:center;position:relative;overflow:hidden}
+.token-card::before{content:'';position:absolute;top:-30px;right:-30px;width:160px;height:160px;border-radius:50%;background:rgba(255,255,255,.08)}
+.token-tag{font-size:.7rem;font-weight:700;letter-spacing:2px;color:rgba(255,255,255,.65);text-transform:uppercase}
+.token-num{font-family:'IBM Plex Mono',monospace;font-size:5rem;font-weight:500;color:var(--white);line-height:1;margin:.4rem 0}
+.token-name{font-size:1rem;color:rgba(255,255,255,.8);font-weight:500}
+.token-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.8rem;margin-top:1.5rem}
+.token-box{background:rgba(255,255,255,.12);border-radius:10px;padding:.8rem .5rem}
+.token-box-val{font-family:'IBM Plex Mono',monospace;font-size:1.1rem;color:var(--white);font-weight:500}
+.token-box-lbl{font-size:.65rem;color:rgba(255,255,255,.55);margin-top:.2rem}
+
+/* STATS */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.5rem}
+.stat-card{background:var(--white);border-radius:var(--rl);padding:1.3rem 1.2rem;box-shadow:var(--shadow-sm);border:1px solid var(--s100);display:flex;align-items:center;gap:1rem}
+.stat-icon{width:44px;height:44px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.stat-icon.green{background:var(--g100)}.stat-icon.blue{background:#dbeafe}
+.stat-icon.amber{background:#fef3c7}.stat-icon.purple{background:#ede9fe}
+.stat-num{font-family:'IBM Plex Mono',monospace;font-size:1.7rem;font-weight:500;color:var(--s800);line-height:1}
+.stat-lbl{font-size:.72rem;color:var(--s400);margin-top:.2rem;font-weight:600;text-transform:uppercase;letter-spacing:.3px}
+
+/* CALLING BANNER */
+.calling-banner{background:linear-gradient(135deg,var(--g600),var(--g400));border-radius:var(--rl);padding:1.8rem;display:flex;align-items:center;justify-content:space-between;color:var(--white);margin-bottom:1rem;box-shadow:0 4px 20px rgba(22,163,74,.3)}
+.calling-pill{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.2);border-radius:20px;padding:.25rem .8rem;font-size:.72rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:.6rem}
+.blink-dot{width:7px;height:7px;background:var(--white);border-radius:50%;animation:blk 1s infinite}
+.calling-token{font-family:'IBM Plex Mono',monospace;font-size:3.5rem;font-weight:500;line-height:1}
+.calling-info{font-size:.9rem;color:rgba(255,255,255,.8);margin-top:.3rem}
+.calling-actions{display:flex;flex-direction:column;gap:.6rem}
+
+/* TABLE */
+.table-wrap{overflow-x:auto;border-radius:var(--r)}
+table{width:100%;border-collapse:collapse}
+thead th{padding:.7rem 1rem;background:var(--s50);font-size:.72rem;font-weight:700;color:var(--s500);text-align:left;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--s200)}
+tbody td{padding:.85rem 1rem;border-bottom:1px solid var(--s100);font-size:.88rem;vertical-align:middle}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:var(--g50)}
+
+/* BADGES */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:.2rem .7rem;border-radius:20px;font-size:.72rem;font-weight:700}
+.badge::before{content:'';width:6px;height:6px;border-radius:50%}
+.badge-waiting{background:#fef3c7;color:#92400e}.badge-waiting::before{background:#f59e0b}
+.badge-calling{background:var(--g100);color:var(--g800);animation:pulse 1.5s infinite}.badge-calling::before{background:var(--g500)}
+.badge-done{background:#dbeafe;color:#1e3a8a}.badge-done::before{background:var(--blue)}
+.badge-skipped{background:#fee2e2;color:#7f1d1d}.badge-skipped::before{background:var(--red)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+
+/* LOGIN */
+.login-wrap{max-width:420px;margin:3rem auto}
+.login-header{text-align:center;margin-bottom:2rem}
+.login-avatar{width:72px;height:72px;background:linear-gradient(135deg,var(--g600),var(--g400));border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:32px;margin:0 auto 1rem;box-shadow:0 4px 16px rgba(22,163,74,.3)}
+.login-title{font-size:1.3rem;font-weight:800;color:var(--s800)}
+.login-sub{font-size:.85rem;color:var(--s400);margin-top:.3rem}
+
+/* NOTIFICATION */
+.notif{position:fixed;top:76px;right:20px;background:var(--s800);color:var(--white);padding:.8rem 1.2rem;border-radius:var(--r);font-size:.85rem;z-index:999;box-shadow:var(--shadow);transform:translateX(120%);transition:transform .3s cubic-bezier(.34,1.56,.64,1);border-left:3px solid var(--g400);max-width:300px}
+.notif.show{transform:translateX(0)}.notif.error{border-left-color:var(--red)}
+
+/* SETUP MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(15,23,42,.5);backdrop-filter:blur(4px);z-index:500;display:flex;align-items:center;justify-content:center;padding:1rem}
+.modal{background:var(--white);border-radius:var(--rl);padding:2rem;max-width:480px;width:100%;box-shadow:0 10px 40px rgba(0,0,0,.1);animation:fadeUp .3s ease}
+.modal h2{font-size:1.2rem;font-weight:800;color:var(--s800);margin-bottom:.4rem}
+.modal p{font-size:.85rem;color:var(--s500);margin-bottom:1.5rem;line-height:1.6}
+.modal-step{display:flex;align-items:flex-start;gap:.8rem;padding:.7rem 0;border-bottom:1px solid var(--s100);font-size:.85rem;color:var(--s600);line-height:1.5}
+.modal-step:last-child{border-bottom:none}
+.step-num{width:22px;height:22px;background:var(--g600);color:var(--white);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;flex-shrink:0;margin-top:1px}
+.modal a{color:var(--g600);font-weight:600}
+.modal code{background:rgba(0,0,0,.06);padding:.1rem .4rem;border-radius:4px;font-family:'IBM Plex Mono',monospace;font-size:.8rem}
+.empty-state{text-align:center;padding:3rem 1rem;color:var(--s400)}
+.empty-icon{font-size:2.5rem;margin-bottom:.7rem}
+
+@media(max-width:640px){
+  .stats-grid{grid-template-columns:1fr 1fr}
+  .token-grid{grid-template-columns:1fr 1fr}
+  .form-row{grid-template-columns:1fr}
+  .calling-banner{flex-direction:column;gap:1rem}
+}
+</style>
+</head>
+<body>
+
+<div class="notif" id="notif"></div>
+
+<!-- SETUP MODAL -->
+<div class="modal-overlay" id="setup-modal">
+  <div class="modal">
+    <h2>⚙️ Connect Supabase Database</h2>
+    <p>Enter your Supabase project credentials. Your existing tables in the project won't be affected.</p>
+    <div style="margin-bottom:1.5rem">
+      <div class="modal-step"><span class="step-num">1</span>Run <code>schema.sql</code> in Supabase → SQL Editor</div>
+      <div class="modal-step"><span class="step-num">2</span>Go to <strong>Project Settings → API</strong> → copy URL &amp; anon key</div>
+      <div class="modal-step"><span class="step-num">3</span>Paste below and click Connect</div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Supabase Project URL</label>
+      <input class="form-input" id="sb-url" placeholder="https://xxxxxxxxxxxx.supabase.co">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Supabase Anon Key</label>
+      <input class="form-input" id="sb-key" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...">
+    </div>
+    <button class="btn btn-primary btn-full btn-lg" onclick="connectSupabase()">🔗 Connect &amp; Save</button>
+    <p style="text-align:center;margin-top:1rem;font-size:.75rem;color:var(--s400)">Credentials saved in browser localStorage</p>
+  </div>
+</div>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="brand">
+    <div class="brand-icon">🏥</div>
+    <div>
+      <div class="brand-name">Medi<span>Queue</span></div>
+      <div class="brand-sub">Dr. R.K. Dwivedi Clinic</div>
+    </div>
+    <div class="db-chip" id="db-chip" style="display:none">
+      <span class="db-dot"></span> Supabase Connected
+    </div>
+  </div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="showPage('patient',this)">🏥 Patient</button>
+    <button class="nav-tab" onclick="showPage('doctor',this)">👨‍⚕️ Doctor</button>
+  </div>
+</div>
+
+<!-- PATIENT PAGE -->
+<div class="page active" id="page-patient">
+  <div class="page-header">
+    <h1>Get Your Queue Token</h1>
+    <p>Register once and track your position in real-time</p>
+  </div>
+  <div class="container">
+
+    <div class="status-bar">
+      <div class="status-item">
+        <div class="status-label">Now Calling</div>
+        <div class="status-value" id="calling-display">—</div>
+      </div>
+      <div class="status-divider"></div>
+      <div class="status-item">
+        <div class="status-label">Patients Waiting</div>
+        <div class="status-value" id="waiting-count">0</div>
+      </div>
+    </div>
+
+    <div class="card" id="reg-card">
+      <div class="card-title"><div class="card-title-icon">📋</div> Patient Registration</div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Full Name *</label>
+          <input class="form-input" id="pat-name" placeholder="e.g. Rahul Sharma">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Age *</label>
+          <input class="form-input" type="number" id="pat-age" placeholder="25" min="1" max="120">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Phone Number</label>
+          <input class="form-input" type="tel" id="pat-phone" placeholder="+91 8318465090">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Reason for Visit *</label>
+          <select class="form-input" id="pat-reason">
+            <option value="">— Select reason —</option>
+            <option>General Checkup</option>
+            <option>Fever / Cold</option>
+            <option>Follow-up</option>
+            <option>Blood Pressure</option>
+            <option>Diabetes</option>
+            <option>Injury</option>
+            <option>Other</option>
+          </select>
+        </div>
+      </div>
+      <button class="btn btn-primary btn-lg" id="get-token-btn" onclick="getToken()">🎫 Get My Token</button>
+    </div>
+
+    <div id="token-result-section" style="display:none">
+      <div class="token-card">
+        <div class="token-tag">Your Token Number</div>
+        <div class="token-num" id="my-token">—</div>
+        <div class="token-name" id="pat-name-display"></div>
+        <div class="token-grid">
+          <div class="token-box"><div class="token-box-val" id="my-position">—</div><div class="token-box-lbl">Queue Position</div></div>
+          <div class="token-box"><div class="token-box-val" id="my-eta">—</div><div class="token-box-lbl">Est. Wait</div></div>
+          <div class="token-box"><div class="token-box-val" id="my-appt-time">—</div><div class="token-box-lbl">Expected At</div></div>
+          <div class="token-box"><div class="token-box-val" id="my-countdown">—</div><div class="token-box-lbl">Countdown</div></div>
+        </div>
+      </div>
+      <div style="text-align:center;margin-top:1rem">
+        <button class="btn btn-danger btn-sm" onclick="leaveQueue()">❌ Leave Queue</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- DOCTOR PAGE -->
+<div class="page" id="page-doctor">
+
+  <div id="doc-login">
+    <div class="container">
+      <div class="login-wrap">
+        <div class="login-header">
+          <div class="login-avatar">👨‍⚕️</div>
+          <div class="login-title">Doctor Portal</div>
+          <div class="login-sub">Sign in to manage the patient queue</div>
+        </div>
+        <div class="card">
+          <div class="form-group">
+            <label class="form-label">Doctor ID</label>
+            <input class="form-input" id="doc-id" placeholder="DR001">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Password</label>
+            <input class="form-input" type="password" id="doc-pass" placeholder="••••••••">
+          </div>
+          <button class="btn btn-primary btn-full btn-lg" onclick="doctorLogin()">Sign In →</button>
+          <p style="font-size:.75rem;color:var(--s400);margin-top:1rem;text-align:center">
+            Demo — ID: <strong>DR001</strong> &nbsp;|&nbsp; Pass: <strong>Rkdwivedi123</strong>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="doc-dashboard" style="display:none">
+    <div class="page-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem">
+      <div>
+        <h1 style="font-size:1.3rem">Dr. R.K. Dwivedi — Queue Dashboard</h1>
+        <p id="doc-date"></p>
+      </div>
+      <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+        <button class="btn btn-secondary btn-sm" onclick="openSetup()">⚙️ DB Settings</button>
+        <button class="btn btn-danger btn-sm" onclick="doctorLogout()">Logout</button>
+      </div>
+    </div>
+
+    <div class="container">
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-icon green">👥</div><div><div class="stat-num" id="st-total">0</div><div class="stat-lbl">Total Today</div></div></div>
+        <div class="stat-card"><div class="stat-icon amber">⏳</div><div><div class="stat-num" id="st-waiting">0</div><div class="stat-lbl">Waiting</div></div></div>
+        <div class="stat-card"><div class="stat-icon blue">✅</div><div><div class="stat-num" id="st-done">0</div><div class="stat-lbl">Done</div></div></div>
+        <div class="stat-card"><div class="stat-icon purple">📊</div><div><div class="stat-num" id="st-remaining">0</div><div class="stat-lbl">Remaining</div></div></div>
+      </div>
+
+      <div id="calling-panel" style="display:none">
+        <div class="calling-banner">
+          <div>
+            <div class="calling-pill"><span class="blink-dot"></span> Now Calling</div>
+            <div class="calling-token" id="cc-token">—</div>
+            <div class="calling-info" id="cc-name"></div>
+          </div>
+          <div class="calling-actions">
+            <button class="btn btn-secondary" onclick="markDone()">✅ Done — Call Next</button>
+            <button class="btn btn-amber btn-sm" onclick="skipCurrent()">⏭ Skip Patient</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="no-call-panel">
+        <div class="card">
+          <div class="card-title"><div class="card-title-icon">⏸</div> Queue Control</div>
+          <div style="display:flex;gap:.7rem;flex-wrap:wrap">
+            <button class="btn btn-primary" onclick="callNext()">📢 Call Next Patient</button>
+            <button class="btn btn-danger btn-sm" onclick="resetQueue()">🗑 Reset Queue</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title" style="justify-content:space-between">
+          <span style="display:flex;align-items:center;gap:.5rem">
+            <div class="card-title-icon">📋</div> Patient Records
+          </span>
+          <button class="btn btn-secondary btn-sm" onclick="refreshDoctorView()">↻ Refresh</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th><th>Token</th><th>Name</th><th>Age</th>
+                <th>Phone</th><th>Reason</th><th>Status</th><th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="patient-tbody">
+              <tr><td colspan="8"><div class="empty-state"><div class="empty-icon">🏥</div>No patients yet</div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Supabase CDN — works in real browser / VS Code, not in Claude sandbox -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script>
+/* ═══════════════════════════════
+   CONFIG
+═══════════════════════════════ */
+const AVG_MINS = 7;
+let sb = null;
+
+/* ═══════════════════════════════
+   SUPABASE INIT
+═══════════════════════════════ */
+function initSB(url, key) {
+  try {
+    sb = window.supabase.createClient(url, key);
+    document.getElementById('db-chip').style.display = 'inline-flex';
+    return true;
+  } catch(e) {
+    console.error('Supabase init failed:', e);
+    return false;
+  }
+}
+
+function connectSupabase() {
+  const url = document.getElementById('sb-url').value.trim();
+  const key = document.getElementById('sb-key').value.trim();
+  if (!url || !key) { showNotif('⚠️ Enter both URL and key', true); return; }
+  localStorage.setItem('mq_url', url);
+  localStorage.setItem('mq_key', key);
+  initSB(url, key);
+  document.getElementById('setup-modal').style.display = 'none';
+  showNotif('✅ Supabase connected!');
+  refreshPatientView();
+}
+
+function openSetup() {
+  document.getElementById('sb-url').value = localStorage.getItem('mq_url') || '';
+  document.getElementById('sb-key').value = localStorage.getItem('mq_key') || '';
+  document.getElementById('setup-modal').style.display = 'flex';
+}
+
+// Auto-load saved credentials
+const _u = localStorage.getItem('mq_url');
+const _k = localStorage.getItem('mq_key');
+if (_u && _k) {
+  initSB(_u, _k);
+  document.getElementById('setup-modal').style.display = 'none';
+}
+
+/* ═══════════════════════════════
+   IN-MEMORY FALLBACK
+═══════════════════════════════ */
+let mem = { patients: [], counter: 1 };
+
+/* ═══════════════════════════════
+   DB ABSTRACTION
+═══════════════════════════════ */
+async function dbAll() {
+  if (!sb) return [...mem.patients];
+  const { data, error } = await sb
+    .from('patients').select('*').order('token', { ascending: true });
+  if (error) throw error;
+  return data || [];
+}
+
+async function dbInsert(p) {
+  if (!sb) { mem.patients.push(p); return p; }
+
+  // Save to active queue
+  const { data, error } = await sb
+    .from('patients').insert([p]).select().single();
+  if (error) throw error;
+
+  // Also save to permanent log
+  await sb.from('patients_log').insert([{
+    ...p,
+    queue_date: new Date().toISOString().split('T')[0]
+  }]);
+
+  return data;
+}
+
+async function dbUpdate(id, fields) {
+  if (!sb) {
+    const i = mem.patients.findIndex(p => p.id === id);
+    if (i >= 0) mem.patients[i] = { ...mem.patients[i], ...fields };
+    return mem.patients[i];
+  }
+
+  // Update active queue
+  const { data, error } = await sb
+    .from('patients').update(fields).eq('id', id).select().single();
+  if (error) throw error;
+
+  // Also update the permanent log
+  await sb.from('patients_log').update(fields).eq('id', id);
+
+  return data;
+}
+
+async function dbDelete(id) {
+  if (!sb) { mem.patients = mem.patients.filter(p => p.id !== id); return; }
+  const { error } = await sb.from('patients').delete().eq('id', id);
+  if (error) throw error;
+}
+
+async function dbReset() {
+  if (!sb) { mem.patients = []; mem.counter = 1; return; }
+  await sb.from('patients').delete().gte('token', 0);
+  await sb.from('token_counter').update({ value: 0 }).eq('id', 1);
+}
+
+async function dbNextToken() {
+  if (!sb) return mem.counter++;
+  const { data, error } = await sb.rpc('increment_token_counter');
+  if (error) {
+    const all = await dbAll();
+    return all.length > 0 ? Math.max(...all.map(p => p.token)) + 1 : 1;
+  }
+  return data;
+}
+
+/* ═══════════════════════════════
+   UI HELPERS
+═══════════════════════════════ */
+let _nt = null;
+function showNotif(msg, isErr = false) {
+  const el = document.getElementById('notif');
+  el.textContent = msg;
+  el.className = 'notif show' + (isErr ? ' error' : '');
+  clearTimeout(_nt);
+  _nt = setTimeout(() => el.classList.remove('show'), 3500);
+}
+
+function fmtTime(iso) {
+  if (!iso) return '—';
+  return new Date(iso).toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' });
+}
+
+function addMins(m) {
+  const d = new Date();
+  d.setMinutes(d.getMinutes() + m);
+  return d.toISOString();
+}
+
+function countdown(ms) {
+  const diff = ms - Date.now();
+  if (diff <= 0) return 'Now';
+  const m = Math.floor(diff / 60000);
+  const s = Math.floor((diff % 60000) / 1000);
+  return `${m}m ${String(s).padStart(2,'0')}s`;
+}
+
+/* ═══════════════════════════════
+   STATE
+═══════════════════════════════ */
+let myId        = sessionStorage.getItem('mq_myid') || null;
+let docLoggedIn = sessionStorage.getItem('mq_doc') === '1';
+let cdTarget    = null;
+
+/* ═══════════════════════════════
+   PAGES
+═══════════════════════════════ */
+function showPage(p, btn) {
+  document.querySelectorAll('.page').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(el => el.classList.remove('active'));
+  document.getElementById('page-' + p).classList.add('active');
+  btn.classList.add('active');
+  if (p === 'patient') refreshPatientView();
+  if (p === 'doctor' && docLoggedIn) refreshDoctorView();
+}
+
+/* ═══════════════════════════════
+   PATIENT
+═══════════════════════════════ */
+async function getToken() {
+  const name   = document.getElementById('pat-name').value.trim();
+  const age    = document.getElementById('pat-age').value.trim();
+  const phone  = document.getElementById('pat-phone').value.trim();
+  const reason = document.getElementById('pat-reason').value;
+  if (!name || !age || !reason) {
+    showNotif('⚠️ Please fill all required fields', true); return;
+  }
+  const btn = document.getElementById('get-token-btn');
+  btn.disabled = true; btn.textContent = 'Processing…';
+  try {
+    const token = await dbNextToken();
+    const uid   = 'P' + Date.now() + Math.random().toString(36).slice(2, 6);
+    const p = {
+      id: uid, token,
+      name, age: parseInt(age), phone, reason,
+      status: 'waiting',
+      registered_at: new Date().toISOString(),
+      called_at: null, done_at: null
+    };
+    await dbInsert(p);
+    myId = uid;
+    sessionStorage.setItem('mq_myid', myId);
+    document.getElementById('reg-card').style.display = 'none';
+    document.getElementById('token-result-section').style.display = 'block';
+    await refreshPatientView();
+    showNotif('🎫 Token #' + token + ' issued!');
+  } catch(e) {
+    showNotif('❌ ' + e.message, true);
+  } finally {
+    btn.disabled = false; btn.innerHTML = '🎫 Get My Token';
+  }
+}
+
+async function refreshPatientView() {
+  try {
+    const all     = await dbAll();
+    const waiting = all.filter(p => p.status === 'waiting');
+    const calling = all.find(p => p.status === 'calling');
+    document.getElementById('calling-display').textContent = calling ? '#' + calling.token : '—';
+    document.getElementById('waiting-count').textContent   = waiting.length;
+
+    if (!myId) return;
+    const me = all.find(p => p.id === myId);
+    if (!me) {
+      myId = null; sessionStorage.removeItem('mq_myid');
+      document.getElementById('reg-card').style.display = 'block';
+      document.getElementById('token-result-section').style.display = 'none';
+      return;
+    }
+
+    document.getElementById('token-result-section').style.display = 'block';
+    document.getElementById('reg-card').style.display = 'none';
+    document.getElementById('my-token').textContent = '#' + me.token;
+
+    if (me.status === 'done') {
+      document.getElementById('pat-name-display').textContent = me.name + ' — ✅ Done';
+      document.getElementById('my-position').textContent  = '✅';
+      document.getElementById('my-eta').textContent       = '0m';
+      document.getElementById('my-appt-time').textContent = fmtTime(me.done_at);
+      document.getElementById('my-countdown').textContent = 'Done';
+      cdTarget = null; return;
+    }
+    if (me.status === 'calling') {
+      document.getElementById('pat-name-display').textContent = me.name + ' — 🔔 Your Turn!';
+      document.getElementById('my-position').textContent  = '🔔';
+      document.getElementById('my-eta').textContent       = '0m';
+      document.getElementById('my-appt-time').textContent = 'Now';
+      document.getElementById('my-countdown').textContent = '🔔';
+      cdTarget = null; return;
+    }
+
+    const pos = waiting.findIndex(p => p.id === me.id) + 1;
+    const eta = pos * AVG_MINS;
+    cdTarget  = Date.now() + eta * 60000;
+    document.getElementById('pat-name-display').textContent  = me.name;
+    document.getElementById('my-position').textContent       = pos;
+    document.getElementById('my-eta').textContent            = eta + ' min';
+    document.getElementById('my-appt-time').textContent      = fmtTime(addMins(eta));
+  } catch(e) {
+    console.warn('refreshPatientView:', e.message);
+  }
+}
+
+async function leaveQueue() {
+  if (!myId) return;
+  try { await dbDelete(myId); } catch(e) {}
+  myId = null; sessionStorage.removeItem('mq_myid');
+  document.getElementById('reg-card').style.display = 'block';
+  document.getElementById('token-result-section').style.display = 'none';
+  showNotif('You have left the queue.');
+  refreshPatientView();
+}
+
+/* ═══════════════════════════════
+   DOCTOR AUTH
+═══════════════════════════════ */
+function doctorLogin() {
+  const id = document.getElementById('doc-id').value.trim();
+  const pw = document.getElementById('doc-pass').value.trim();
+  if (id === 'DR001' && pw === '123') {
+    docLoggedIn = true;
+    sessionStorage.setItem('mq_doc', '1');
+    document.getElementById('doc-login').style.display     = 'none';
+    document.getElementById('doc-dashboard').style.display = 'block';
+    document.getElementById('doc-date').textContent =
+      new Date().toLocaleDateString('en-IN', {
+        weekday:'long', year:'numeric', month:'long', day:'numeric'
+      });
+    refreshDoctorView();
+    showNotif('Welcome, Dr. R.K. Dwivedi!');
+  } else {
+    showNotif('❌ Invalid credentials', true);
+  }
+}
+
+function doctorLogout() {
+  docLoggedIn = false;
+  sessionStorage.removeItem('mq_doc');
+  document.getElementById('doc-login').style.display     = 'block';
+  document.getElementById('doc-dashboard').style.display = 'none';
+}
+
+/* ═══════════════════════════════
+   DOCTOR QUEUE CONTROLS
+═══════════════════════════════ */
+async function callNext() {
+  try {
+    const all  = await dbAll();
+    const cur  = all.find(p => p.status === 'calling');
+    if (cur) await dbUpdate(cur.id, { status:'done', done_at: new Date().toISOString() });
+    const next = all.find(p => p.status === 'waiting');
+    if (!next) { showNotif('ℹ️ No more patients'); await refreshDoctorView(); return; }
+    await dbUpdate(next.id, { status:'calling', called_at: new Date().toISOString() });
+    showNotif('📢 Calling Token #' + next.token);
+    await refreshDoctorView();
+  } catch(e) { showNotif('❌ ' + e.message, true); }
+}
+
+async function markDone() {
+  try {
+    const all  = await dbAll();
+    const cur  = all.find(p => p.status === 'calling');
+    if (cur) await dbUpdate(cur.id, { status:'done', done_at: new Date().toISOString() });
+    const next = all.find(p => p.status === 'waiting');
+    if (!next) { showNotif('✅ Done — Queue empty'); await refreshDoctorView(); return; }
+    await dbUpdate(next.id, { status:'calling', called_at: new Date().toISOString() });
+    showNotif('✅ Done. Now calling #' + next.token);
+    await refreshDoctorView();
+  } catch(e) { showNotif('❌ ' + e.message, true); }
+}
+
+async function skipCurrent() {
+  try {
+    const all = await dbAll();
+    const cur = all.find(p => p.status === 'calling');
+    if (!cur) { showNotif('No patient being called', true); return; }
+    await dbUpdate(cur.id, { status: 'skipped' });
+    showNotif('⏭ Token #' + cur.token + ' skipped');
+    await refreshDoctorView();
+  } catch(e) { showNotif('❌ ' + e.message, true); }
+}
+
+async function callSpecific(token) {
+  try {
+    const all = await dbAll();
+    const cur = all.find(p => p.status === 'calling');
+    if (cur) await dbUpdate(cur.id, { status:'done', done_at: new Date().toISOString() });
+    const tgt = all.find(p => p.token === token);
+    if (!tgt) { showNotif('Token not found', true); return; }
+    await dbUpdate(tgt.id, { status:'calling', called_at: new Date().toISOString() });
+    showNotif('📢 Calling Token #' + token);
+    await refreshDoctorView();
+  } catch(e) { showNotif('❌ ' + e.message, true); }
+}
+
+async function resetQueue() {
+  if (!confirm('Reset entire queue? This cannot be undone.')) return;
+  try {
+    await dbReset();
+    showNotif('🗑 Queue reset');
+    await refreshDoctorView();
+  } catch(e) { showNotif('❌ ' + e.message, true); }
+}
+
+async function refreshDoctorView() {
+  try {
+    const all = await dbAll();
+    document.getElementById('st-total').textContent     = all.length;
+    document.getElementById('st-waiting').textContent   = all.filter(p => p.status === 'waiting').length;
+    document.getElementById('st-done').textContent      = all.filter(p => p.status === 'done').length;
+    document.getElementById('st-remaining').textContent = all.filter(p => ['waiting','calling'].includes(p.status)).length;
+
+    const cur = all.find(p => p.status === 'calling');
+    document.getElementById('calling-panel').style.display = cur ? 'block' : 'none';
+    document.getElementById('no-call-panel').style.display = cur ? 'none'  : 'block';
+    if (cur) {
+      document.getElementById('cc-token').textContent = '#' + cur.token;
+      document.getElementById('cc-name').textContent  = cur.name + ', Age ' + cur.age + ' · ' + cur.reason;
+    }
+
+    const tbody = document.getElementById('patient-tbody');
+    if (!all.length) {
+      tbody.innerHTML = '<tr><td colspan="8"><div class="empty-state"><div class="empty-icon">🏥</div>No patients yet</div></td></tr>';
+      return;
+    }
+    tbody.innerHTML = all.map((p, i) => `
+      <tr>
+        <td style="color:var(--s400);font-size:.8rem">${i+1}</td>
+        <td><strong style="font-family:'IBM Plex Mono',monospace;color:var(--g700)">#${p.token}</strong></td>
+        <td><strong>${p.name}</strong></td>
+        <td style="color:var(--s500)">${p.age}</td>
+        <td style="color:var(--s500);font-size:.82rem">${p.phone || '—'}</td>
+        <td><span style="background:var(--g50);color:var(--g700);padding:.15rem .6rem;border-radius:20px;font-size:.75rem;font-weight:600">${p.reason}</span></td>
+        <td>${badge(p.status)}</td>
+        <td>
+          ${p.status === 'waiting'
+            ? `<button class="btn btn-secondary btn-sm" onclick="callSpecific(${p.token})">📢 Call</button>`
+            : ''}
+          ${['done','skipped'].includes(p.status)
+            ? `<span style="font-size:.75rem;color:var(--s400)">${fmtTime(p.done_at)}</span>`
+            : ''}
+        </td>
+      </tr>`).join('');
+  } catch(e) { showNotif('❌ ' + e.message, true); }
+}
+
+function badge(s) {
+  const lbl = { waiting:'⏳ Waiting', calling:'🔔 Calling', done:'✅ Done', skipped:'⏭ Skipped' };
+  return `<span class="badge badge-${s}">${lbl[s]}</span>`;
+}
+
+/* ═══════════════════════════════
+   LIVE TICK
+═══════════════════════════════ */
+setInterval(() => {
+  const el = document.getElementById('my-countdown');
+  if (el && cdTarget) el.textContent = countdown(cdTarget);
+}, 1000);
+
+setInterval(async () => {
+  if (document.getElementById('page-patient').classList.contains('active'))
+    await refreshPatientView();
+  if (docLoggedIn && document.getElementById('doc-dashboard').style.display !== 'none')
+    await refreshDoctorView();
+}, 6000);
+
+/* ═══════════════════════════════
+   INIT
+═══════════════════════════════ */
+(async () => {
+  if (docLoggedIn) {
+    document.getElementById('doc-login').style.display     = 'none';
+    document.getElementById('doc-dashboard').style.display = 'block';
+    document.getElementById('doc-date').textContent =
+      new Date().toLocaleDateString('en-IN', {
+        weekday:'long', year:'numeric', month:'long', day:'numeric'
+      });
+    refreshDoctorView();
+  }
+  if (myId) {
+    document.getElementById('reg-card').style.display = 'none';
+    document.getElementById('token-result-section').style.display = 'block';
+  }
+  await refreshPatientView();
+})();
+</script>
+</body>
+</html>
